@@ -12,6 +12,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(COMMON_SOURCES
     src/dumper.c
     src/rbtree.c
+    src/statdata.c 
+    src/datavector.c
 )
 
 add_library(common_obj OBJECT ${COMMON_SOURCES})

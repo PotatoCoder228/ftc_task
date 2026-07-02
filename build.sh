@@ -11,7 +11,7 @@ while getopts "b:s:s:" opt; do
         b) CMAKE_BUILD_TYPE="$OPTARG" ;;
         s) ENABLE_SANITIZERS="$OPTARG" ;;
         l) ENABLE_LTO="$OPTARG" ;;
-        *) echo "Usage: $0 [-b build_type] [-s sanitizers]" >&2; exit 1 ;;
+        *) echo "Usage: $0 [-b build_type] [-s sanitizers] -l [lto]" >&2; exit 1 ;;
     esac
 done
 

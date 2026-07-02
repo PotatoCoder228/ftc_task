@@ -1,0 +1,9 @@
+PROJECT_NAME           = "FTC_task"
+INPUT                  = include/ src/ test/
+RECURSIVE              = YES
+FILE_PATTERNS          = *.c *.h
+EXTRACT_ALL            = YES
+OPTIMIZE_OUTPUT_FOR_C  = YES
+JAVADOC_AUTOBRIEF      = YES
+HIDE_UNDOC_MEMBERS     = NO
+OUTPUT_DIRECTORY       = ./docs
