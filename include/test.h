@@ -16,3 +16,22 @@ bool testOutputExists();
 bool testOutputPermissionDenied();
 bool testInputPermissionDenied();
 bool testSuccess();
+
+static inline void LoadTestSet(const char *fn1, const char *fn2, StatData *arr1,
+                        StatData *arr2, size_t num1, size_t num2) {
+  if (!fn1 || !fn2 || !arr1 || !arr2) {
+    return;
+  }
+  StatData *data1 = malloc(sizeof(StatData) * num1);
+  StatData *data2 = malloc(sizeof(StatData) * num2);
+
+  memcpy(data1, arr1, sizeof(StatData) * num1);
+  memcpy(data2, arr2, sizeof(StatData) * num2);
+
+  DataVector *v = DataVectorCreate(0);
+  DataVectorSetData(v, data1, num1);
+  StoreDump(fn1, v);
+  DataVectorSetData(v, data2, num2);
+  StoreDump(fn2, v);
+  DataVectorDestroy(v);
+}

@@ -10,22 +10,27 @@ import random
 import argparse
 import sys
 
+
 def generate_random_record(rec_id):
     """Создаёт запись StatData со случайными значениями для заданного id."""
     return {
-        'id': rec_id,
-        'count': random.randint(1, 1000),
-        'cost': round(random.uniform(0.001, 1000.0), 6),
-        'primary': random.randint(0, 1),
-        'mode': random.randint(0, 7)
+        "id": rec_id,
+        "count": random.randint(1, 1000),
+        "cost": round(random.uniform(0.001, 1000.0), 6),
+        "primary": random.randint(0, 1),
+        "mode": random.randint(0, 7),
     }
+
 
 def format_record(rec, indent=4):
     """Форматирует одну запись в виде строки инициализатора C."""
-    spaces = ' ' * indent
-    return (f"{spaces}{{ .id = {rec['id']}L, .count = {rec['count']}, "
-            f".cost = {rec['cost']:.6f}, .primary = {rec['primary']}, "
-            f".mode = {rec['mode']} }}")
+    spaces = " " * indent
+    return (
+        f"{spaces}{{ .id = {rec['id']}L, .count = {rec['count']}, "
+        f".cost = {rec['cost']:.6f}, .primary = {rec['primary']}, "
+        f".mode = {rec['mode']} }}"
+    )
+
 
 def generate_arrays(size_a, size_b, overlap, seed=None):
     """
@@ -67,11 +72,11 @@ def generate_arrays(size_a, size_b, overlap, seed=None):
             ra = records_a[id_]
             rb = records_b[id_]
             out_dict[id_] = {
-                'id': id_,
-                'count': ra['count'] + rb['count'],
-                'cost': round(ra['cost'] + rb['cost'], 6),
-                'primary': rb['primary'],
-                'mode': rb['mode']
+                "id": id_,
+                "count": ra["count"] + rb["count"],
+                "cost": round(ra["cost"] + rb["cost"], 6),
+                "primary": rb["primary"],
+                "mode": rb["mode"],
             }
         elif in_a:
             out_dict[id_] = records_a[id_].copy()
@@ -79,13 +84,21 @@ def generate_arrays(size_a, size_b, overlap, seed=None):
             out_dict[id_] = records_b[id_].copy()
 
     # 5. Сортировка по cost (возрастание)
-    out_records = sorted(out_dict.values(), key=lambda r: r['cost'])
+    out_records = sorted(out_dict.values(), key=lambda r: r["cost"])
 
     return records_a, records_b, out_records
 
-def print_c_code(records_a, records_b, out_records, name_a='case_1_in_a',
-                 name_b='case_1_in_b', name_out='case_1_out'):
+
+def print_c_code(
+    records_a,
+    records_b,
+    out_records,
+    name_a="case_1_in_a",
+    name_b="case_1_in_b",
+    name_out="case_1_out",
+):
     """Выводит C-код с объявлениями массивов."""
+
     def print_array(name, recs):
         size = len(recs)
         if size == 0:
@@ -101,27 +114,54 @@ def print_c_code(records_a, records_b, out_records, name_a='case_1_in_a',
             print(line)
         print("};")
 
+    print("""
+#pragma once
+#include "dumper.h"
+#include <stdlib.h>
+#include <string.h>
+        """)
     print_array(name_a, list(records_a.values()))
     print()
     print_array(name_b, list(records_b.values()))
     print()
     print_array(name_out, out_records)
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description='Генерирует C-код с тестовыми массивами StatData.'
+        description="Генерирует C-код с тестовыми массивами StatData."
     )
-    parser.add_argument('--size-a', type=int, default=5,
-                        help='Количество элементов в массиве A (по умолчанию 5)')
-    parser.add_argument('--size-b', type=int, default=5,
-                        help='Количество элементов в массиве B (по умолчанию 5)')
-    parser.add_argument('--overlap', type=int, default=None,
-                        help='Количество общих id между A и B (не более min(size_a, size_b)). '
-                             'Если не указано, берётся случайное число от 0 до min.')
-    parser.add_argument('--seed', type=int, default=None,
-                        help='Seed для генератора случайных чисел (для воспроизводимости)')
-    parser.add_argument('--output', type=str, default=None,
-                        help='Имя выходного файла. Если не указано, печатает в stdout.')
+    parser.add_argument(
+        "--size-a",
+        type=int,
+        default=5,
+        help="Количество элементов в массиве A (по умолчанию 5)",
+    )
+    parser.add_argument(
+        "--size-b",
+        type=int,
+        default=5,
+        help="Количество элементов в массиве B (по умолчанию 5)",
+    )
+    parser.add_argument(
+        "--overlap",
+        type=int,
+        default=None,
+        help="Количество общих id между A и B (не более min(size_a, size_b)). "
+        "Если не указано, берётся случайное число от 0 до min.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Seed для генератора случайных чисел (для воспроизводимости)",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default=None,
+        help="Имя выходного файла. Если не указано, печатает в stdout.",
+    )
     args = parser.parse_args()
 
     size_a = args.size_a
@@ -138,7 +178,7 @@ def main():
 
     # Вывод в файл или stdout
     if args.output:
-        with open(args.output, 'w') as f:
+        with open(args.output, "w") as f:
             # Перенаправляем stdout в файл
             sys.stdout = f
             print_c_code(records_a, records_b, out_records)
@@ -146,5 +186,6 @@ def main():
     else:
         print_c_code(records_a, records_b, out_records)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

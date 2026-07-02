@@ -147,7 +147,7 @@ DataVector *LoadDump(const char *name) {
   if (!name) {
     char msg[256];
     snprintf(msg, sizeof(msg), "%s has invalid arguments. name: %p", __func__,
-             name);
+             (void*)name);
     errno = EINVAL;
     perror(msg);
     return NULL;

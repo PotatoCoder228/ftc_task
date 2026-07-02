@@ -11,143 +11,136 @@ typedef struct rb_tree_s {
   long key;
 } rb_tree_s;
 
-static rb_tree_s nil = {
-    .p = NULL, .left = NULL, .right = NULL, .key = 0, .color = BLACK};
-static rb_tree_s *EMPTY_TREE_NODE = &nil;
+/* Глобальный NIL-узел (лист) с корректным p (указывает на себя) */
+static rb_tree_s nil = {BLACK, &nil, NULL, NULL, 0};
+static rb_tree_s *NIL = &nil;
 
+/* Конструктор узла — создаёт чёрный узел (как в вашем исходном коде) */
 rb_tree_s *new_rb_node(long key) {
-  rb_tree_s *new_tree = malloc(sizeof(rb_tree_s));
-  if (new_tree) {
-    new_tree->color = BLACK;
-    new_tree->p = EMPTY_TREE_NODE;
-    new_tree->left = EMPTY_TREE_NODE;
-    new_tree->right = EMPTY_TREE_NODE;
-    new_tree->key = key;
+  rb_tree_s *node = malloc(sizeof(rb_tree_s));
+  if (node) {
+    node->color = BLACK;
+    node->p = NIL;
+    node->left = NIL;
+    node->right = NIL;
+    node->key = key;
   }
-  return new_tree;
+  return node;
 }
 
-bool rb_is_empty(rb_tree_s *node) {
-  return (node == NULL || node == EMPTY_TREE_NODE);
-}
+bool rb_is_empty(rb_tree_s *node) { return (node == NULL || node == NIL); }
 
 void rb_destroy(void *node) {
   if (!rb_is_empty(node)) {
-    rb_destroy(((rb_tree_s *)node)->right);
     rb_destroy(((rb_tree_s *)node)->left);
+    rb_destroy(((rb_tree_s *)node)->right);
     SafeRelease(node);
   }
 }
 
-void rb_set_color(rb_tree_s *node, int8_t color) { node->color = color; }
+/* Сеттеры и геттеры с защитой от изменения NIL */
+void rb_set_color(rb_tree_s *node, int8_t color) {
+  if (node && node != NIL)
+    node->color = color;
+}
+void rb_set_key(rb_tree_s *node, long key) {
+  if (node && node != NIL)
+    node->key = key;
+}
+void rb_set_p(rb_tree_s *node, rb_tree_s *parent) {
+  if (node && node != NIL)
+    node->p = parent;
+}
+void rb_set_left(rb_tree_s *node, rb_tree_s *left) {
+  if (node && node != NIL)
+    node->left = left;
+}
+void rb_set_right(rb_tree_s *node, rb_tree_s *right) {
+  if (node && node != NIL)
+    node->right = right;
+}
 
-void rb_set_key(rb_tree_s *node, long key) { node->key = key; }
-
-void rb_set_p(rb_tree_s *node, rb_tree_s *parent) { node->p = parent; }
-
-void rb_set_left(rb_tree_s *node, rb_tree_s *left) { node->left = left; }
-
-void rb_set_right(rb_tree_s *node, rb_tree_s *right) { node->right = right; }
-
-long rb_key(rb_tree_s *node) { return node->key; }
-
-int8_t rb_color(rb_tree_s *node) { return node->color; }
-
+long rb_key(rb_tree_s *node) { return (node && node != NIL) ? node->key : 0; }
+int8_t rb_color(rb_tree_s *node) {
+  return (node && node != NIL) ? node->color : BLACK;
+}
 rb_tree_s *rb_parent(rb_tree_s *node) {
-  if (node != NULL) {
-    return node->p;
-  }
-  return NULL;
+  return (node && node != NIL) ? node->p : NULL;
 }
-
 rb_tree_s *rb_left(rb_tree_s *node) {
-  if (node != NULL) {
-    return node->left;
-  }
-  return NULL;
+  return (node && node != NIL) ? node->left : NULL;
 }
-
 rb_tree_s *rb_right(rb_tree_s *node) {
-  if (node != NULL) {
-    return node->right;
-  }
-  return NULL;
+  return (node && node != NIL) ? node->right : NULL;
 }
 
+/* Поиск */
 rb_tree_s *rb_search(rb_tree_s *node, long target, int comparator(long, long)) {
-  if (rb_is_empty(node) || comparator(target, node->key) == 0) {
-    // printf("rb_is_empty %d and comparator %d\n", rb_is_empty(node));
-    // if (!rb_is_empty(node)) {
-    //   printf("and comparator %d\n", comparator(target, node->key) == 0);
-    //   printf("target %ld node->key %ld\n", target, node->key);
-    // }
-    return node;
+  while (!rb_is_empty(node)) {
+    int cmp = comparator(target, node->key);
+    if (cmp == 0)
+      return node;
+    node = (cmp < 0) ? node->left : node->right;
   }
-  if (comparator(target, node->key) == -1) {
-    return rb_search(node->left, target, comparator);
-  } else {
-    return rb_search(node->right, target, comparator);
-  }
+  return NIL;
+}
+
+/* Минимум и максимум */
+rb_tree_s *rb_min(rb_tree_s *node) {
+  if (rb_is_empty(node))
+    return NIL;
+  while (!rb_is_empty(node->left))
+    node = node->left;
+  return node;
 }
 
 rb_tree_s *rb_max(rb_tree_s *node) {
-  while (!rb_is_empty(node->right)) {
+  if (rb_is_empty(node))
+    return NIL;
+  while (!rb_is_empty(node->right))
     node = node->right;
-  }
   return node;
 }
 
-rb_tree_s *rb_min(rb_tree_s *node) {
-  while (!rb_is_empty(node->left)) {
-    node = node->left;
-  }
-  return node;
-}
-
+/* Следующий и предыдущий */
 rb_tree_s *rb_successor(rb_tree_s *node) {
-  if (!rb_is_empty(node->right)) {
+  if (rb_is_empty(node))
+    return NIL;
+  if (!rb_is_empty(node->right))
     return rb_min(node->right);
+  rb_tree_s *p = node->p;
+  while (!rb_is_empty(p) && node == p->right) {
+    node = p;
+    p = p->p;
   }
-  rb_tree_s *buf = node->p;
-  while (!rb_is_empty(buf)) {
-    if (node == buf->right) {
-      node = buf;
-      buf = buf->p;
-      continue;
-    }
-    break;
-  }
-  return buf;
+  return p;
 }
 
 rb_tree_s *rb_predecessor(rb_tree_s *node) {
-  if (!rb_is_empty(node->left)) {
+  if (rb_is_empty(node))
+    return NIL;
+  if (!rb_is_empty(node->left))
     return rb_max(node->left);
+  rb_tree_s *p = node->p;
+  while (!rb_is_empty(p) && node == p->left) {
+    node = p;
+    p = p->p;
   }
-  rb_tree_s *buf = node->p;
-  while (!rb_is_empty(buf)) {
-    if (node == buf->left) {
-      node = buf;
-      buf = buf->p;
-      continue;
-    }
-    break;
-  }
-  return buf;
+  return p;
 }
 
+/* Повороты */
 static void rb_left_rotate(rb_tree_s **root, rb_tree_s *x) {
   rb_tree_s *y = x->right;
   x->right = y->left;
-  if (!rb_is_empty(y->left)) {
+  if (!rb_is_empty(y->left))
     y->left->p = x;
-  }
   y->p = x->p;
-  if (rb_is_empty(x->p)) {
+  if (rb_is_empty(x->p))
     *root = y;
-  } else if (x == x->p->left) {
+  else if (x == x->p->left)
     x->p->left = y;
-  } else
+  else
     x->p->right = y;
   y->left = x;
   x->p = y;
@@ -156,112 +149,114 @@ static void rb_left_rotate(rb_tree_s **root, rb_tree_s *x) {
 static void rb_right_rotate(rb_tree_s **root, rb_tree_s *x) {
   rb_tree_s *y = x->left;
   x->left = y->right;
-  if (!rb_is_empty(y->right)) {
+  if (!rb_is_empty(y->right))
     y->right->p = x;
-  }
   y->p = x->p;
-  if (rb_is_empty(x->p)) {
+  if (rb_is_empty(x->p))
     *root = y;
-  } else if (x == x->p->right) {
+  else if (x == x->p->right)
     x->p->right = y;
-  } else
+  else
     x->p->left = y;
   y->right = x;
   x->p = y;
 }
 
-static void rb_insert_fix(rb_tree_s **root, rb_tree_s *node) {
-  rb_tree_s *y;
-  while (node->p->color == RED) {
-    if (node->p == node->p->p->left) {
-      y = node->p->p->right;
+/* Балансировка после вставки */
+static void rb_insert_fix(rb_tree_s **root, rb_tree_s *z) {
+  while (z->p->color == RED) {
+    if (z->p == z->p->p->left) {
+      rb_tree_s *y = z->p->p->right;
       if (y->color == RED) {
-        node->p->color = BLACK;
+        z->p->color = BLACK;
         y->color = BLACK;
-        node->p->p->color = RED;
-        node = node->p->p;
+        z->p->p->color = RED;
+        z = z->p->p;
       } else {
-        if (node == node->p->right) {
-          node = node->p;
-          rb_left_rotate(root, node);
+        if (z == z->p->right) {
+          z = z->p;
+          rb_left_rotate(root, z);
         }
-        node->p->color = BLACK;
-        node->p->p->color = RED;
-        rb_right_rotate(root, node->p->p);
+        z->p->color = BLACK;
+        z->p->p->color = RED;
+        rb_right_rotate(root, z->p->p);
       }
     } else {
-      y = node->p->p->left;
+      rb_tree_s *y = z->p->p->left;
       if (y->color == RED) {
-        node->p->color = BLACK;
+        z->p->color = BLACK;
         y->color = BLACK;
-        node->p->p->color = RED;
-        node = node->p->p;
+        z->p->p->color = RED;
+        z = z->p->p;
       } else {
-        if (node == node->p->left) {
-          node = node->p;
-          rb_right_rotate(root, node);
+        if (z == z->p->left) {
+          z = z->p;
+          rb_right_rotate(root, z);
         }
-        node->p->color = BLACK;
-        node->p->p->color = RED;
-        rb_left_rotate(root, node->p->p);
+        z->p->color = BLACK;
+        z->p->p->color = RED;
+        rb_left_rotate(root, z->p->p);
       }
     }
   }
   (*root)->color = BLACK;
 }
 
+/* Вставка */
 bool rb_insert(rb_tree_s **root, long v, int comparator(long, long)) {
+  if (root == NULL)
+    return false;
+
+  if (*root != NULL) {
+    rb_tree_s *existing = rb_search(*root, v, comparator);
+    if (!rb_is_empty(existing))
+      return false;
+  }
+
   rb_tree_s *z = new_rb_node(v);
   if (z == NULL)
     return false;
-  if (root != NULL) {
-    if (*root == NULL) {
-      *root = z;
-      return true;
-    }
-    rb_tree_s *x = *root;
-    rb_tree_s *y = EMPTY_TREE_NODE;
-    while (!rb_is_empty(x)) {
-      y = x;
-      if (comparator(z->key, x->key) == -1)
-        x = x->left;
-      else
-        x = x->right;
-    }
-    z->p = y;
-    if (rb_is_empty(y)) {
-      *root = z;
-    } else if (comparator(z->key, y->key) == -1)
-      y->left = z;
+
+  rb_tree_s *y = NIL;
+  rb_tree_s *x = *root;
+  while (!rb_is_empty(x)) {
+    y = x;
+    if (comparator(z->key, x->key) < 0)
+      x = x->left;
     else
-      y->right = z;
-    z->left = EMPTY_TREE_NODE;
-    z->right = EMPTY_TREE_NODE;
-    z->color = RED;
-    rb_insert_fix(root, z);
-    return true;
+      x = x->right;
   }
-  return false;
+  z->p = y;
+  if (rb_is_empty(y))
+    *root = z;
+  else if (comparator(z->key, y->key) < 0)
+    y->left = z;
+  else
+    y->right = z;
+
+  z->left = NIL;
+  z->right = NIL;
+  z->color = RED;
+  rb_insert_fix(root, z);
+  return true;
 }
 
+/* Пересадка поддеревьев */
 static void rb_transplant(rb_tree_s **root, rb_tree_s *u, rb_tree_s *v) {
-  if (rb_is_empty(u->p)) {
+  if (rb_is_empty(u->p))
     *root = v;
-  } else if (u == u->p->left) {
+  else if (u == u->p->left)
     u->p->left = v;
-  } else
+  else
     u->p->right = v;
-
-  if (v != EMPTY_TREE_NODE) {
-    v->p = u->p;
-  }
+  v->p = u->p; // даже если v == NIL, это безопасно, т.к. NIL->p существует
 }
 
+/* Балансировка после удаления */
 static void rb_delete_fix(rb_tree_s **root, rb_tree_s *x) {
   while (x != *root && x->color == BLACK) {
-    rb_tree_s *w;
     if (x == x->p->left) {
-      w = x->p->right;
+      rb_tree_s *w = x->p->right;
       if (w->color == RED) {
         w->color = BLACK;
         x->p->color = RED;
@@ -285,7 +280,7 @@ static void rb_delete_fix(rb_tree_s **root, rb_tree_s *x) {
         x = *root;
       }
     } else {
-      w = x->p->left;
+      rb_tree_s *w = x->p->left;
       if (w->color == RED) {
         w->color = BLACK;
         x->p->color = RED;
@@ -313,62 +308,50 @@ static void rb_delete_fix(rb_tree_s **root, rb_tree_s *x) {
   x->color = BLACK;
 }
 
+/* Удаление узла */
 bool rb_delete(rb_tree_s **root, rb_tree_s *z) {
-  if (!rb_is_empty(*root) && !rb_is_empty(z)) {
-    rb_tree_s *x;
-    rb_tree_s *y = z;
-    int8_t y_original_color = y->color;
-    if (rb_is_empty(z->left)) {
-      x = z->right;
-      rb_transplant(root, z, z->right);
-    } else if (rb_is_empty(z->right)) {
-      x = z->left;
-      rb_transplant(root, z, z->left);
+  if (root == NULL || rb_is_empty(*root) || rb_is_empty(z))
+    return false;
+
+  rb_tree_s *y = z;
+  rb_tree_s *x;
+  int8_t y_original_color = y->color;
+
+  if (rb_is_empty(z->left)) {
+    x = z->right;
+    rb_transplant(root, z, z->right);
+  } else if (rb_is_empty(z->right)) {
+    x = z->left;
+    rb_transplant(root, z, z->left);
+  } else {
+    y = rb_min(z->right);
+    y_original_color = y->color;
+    x = y->right;
+    if (y != z->right) {
+      rb_transplant(root, y, y->right);
+      y->right = z->right;
+      y->right->p = y;
     } else {
-      y = rb_min(z->right);
-      y_original_color = y->color;
-      x = y->right;
-      if (y != z->right) {
-        rb_transplant(root, y, y->right);
-        y->right = z->right;
-        y->right->p = y;
-      } else {
-        if (x != EMPTY_TREE_NODE) {
-          x->p = y;
-        }
-      };
-      rb_transplant(root, z, y);
-      y->left = z->left;
-      y->left->p = y;
-      y->color = z->color;
+      x->p = y; // если x == NIL, NIL->p = y (корректно)
     }
-    if (y_original_color == BLACK) {
-      rb_delete_fix(root, x);
-    }
-    SafeRelease(z);
-    return true;
+    rb_transplant(root, z, y);
+    y->left = z->left;
+    y->left->p = y;
+    y->color = z->color;
   }
-  return false;
+
+  if (y_original_color == BLACK) {
+    rb_delete_fix(root, x);
+  }
+
+  SafeRelease(z);
+  return true;
 }
 
+/* Итераторы */
 rb_tree_s *rb_start(rb_tree_s *root) { return rb_min(root); }
-
-bool rb_has_next(rb_tree_s *node) {
-  if (!rb_is_empty(rb_successor(node))) {
-    return true;
-  }
-  return false;
-}
-
-bool rb_has_prev(rb_tree_s *node) {
-  if (!rb_is_empty(rb_predecessor(node))) {
-    return true;
-  }
-  return false;
-}
-
-rb_tree_s *rb_prev(rb_tree_s *node) { return rb_predecessor(node); }
-
-rb_tree_s *rb_next(rb_tree_s *node) { return rb_successor(node); }
-
 rb_tree_s *rb_end(rb_tree_s *root) { return rb_max(root); }
+bool rb_has_next(rb_tree_s *node) { return !rb_is_empty(rb_successor(node)); }
+bool rb_has_prev(rb_tree_s *node) { return !rb_is_empty(rb_predecessor(node)); }
+rb_tree_s *rb_next(rb_tree_s *node) { return rb_successor(node); }
+rb_tree_s *rb_prev(rb_tree_s *node) { return rb_predecessor(node); }
