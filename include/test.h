@@ -6,8 +6,13 @@
 
 int runProcess(const char* cmd);
 
-bool testEmptyFilenames();
+bool testInvalidArgsAll();
 
-// bool testNullFilenames(){
+bool testInvalidArgs1();
+bool testInvalidArgs2();
+bool testInputNotExists();
+bool testOutputExists();
 
-// }
+bool testOutputPermissionDenied();
+bool testInputPermissionDenied();
+bool testSuccess();
