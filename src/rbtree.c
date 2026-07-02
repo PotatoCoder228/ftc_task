@@ -3,21 +3,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct rb_tree_s {
+typedef struct RbTree {
   int8_t color;
-  rb_tree_s *p;
-  rb_tree_s *left;
-  rb_tree_s *right;
+  RbTree *p;
+  RbTree *left;
+  RbTree *right;
   long key;
-} rb_tree_s;
+} RbTree;
 
 /* Глобальный NIL-узел (лист) с корректным p (указывает на себя) */
-static rb_tree_s nil = {BLACK, &nil, NULL, NULL, 0};
-static rb_tree_s *NIL = &nil;
+static RbTree nil = {BLACK, &nil, NULL, NULL, 0};
+static RbTree *NIL = &nil;
 
 /* Конструктор узла — создаёт чёрный узел (как в вашем исходном коде) */
-rb_tree_s *new_rb_node(long key) {
-  rb_tree_s *node = malloc(sizeof(rb_tree_s));
+RbTree *NewRbNode(long key) {
+  RbTree *node = malloc(sizeof(RbTree));
   if (node) {
     node->color = BLACK;
     node->p = NIL;
@@ -28,55 +28,55 @@ rb_tree_s *new_rb_node(long key) {
   return node;
 }
 
-bool rb_is_empty(rb_tree_s *node) { return (node == NULL || node == NIL); }
+bool RbIsEmpty(RbTree *node) { return (node == NULL || node == NIL); }
 
-void rb_destroy(void *node) {
-  if (!rb_is_empty(node)) {
-    rb_destroy(((rb_tree_s *)node)->left);
-    rb_destroy(((rb_tree_s *)node)->right);
+void RbDestroy(void *node) {
+  if (!RbIsEmpty(node)) {
+    RbDestroy(((RbTree *)node)->left);
+    RbDestroy(((RbTree *)node)->right);
     SafeRelease(node);
   }
 }
 
 /* Сеттеры и геттеры с защитой от изменения NIL */
-void rb_set_color(rb_tree_s *node, int8_t color) {
+void RbSetColor(RbTree *node, int8_t color) {
   if (node && node != NIL)
     node->color = color;
 }
-void rb_set_key(rb_tree_s *node, long key) {
+void RbSetKey(RbTree *node, long key) {
   if (node && node != NIL)
     node->key = key;
 }
-void rb_set_p(rb_tree_s *node, rb_tree_s *parent) {
+void RbSetP(RbTree *node, RbTree *parent) {
   if (node && node != NIL)
     node->p = parent;
 }
-void rb_set_left(rb_tree_s *node, rb_tree_s *left) {
+void RbSetLeft(RbTree *node, RbTree *left) {
   if (node && node != NIL)
     node->left = left;
 }
-void rb_set_right(rb_tree_s *node, rb_tree_s *right) {
+void RbSetRight(RbTree *node, RbTree *right) {
   if (node && node != NIL)
     node->right = right;
 }
 
-long rb_key(rb_tree_s *node) { return (node && node != NIL) ? node->key : 0; }
-int8_t rb_color(rb_tree_s *node) {
+long RbKey(RbTree *node) { return (node && node != NIL) ? node->key : 0; }
+int8_t RbColor(RbTree *node) {
   return (node && node != NIL) ? node->color : BLACK;
 }
-rb_tree_s *rb_parent(rb_tree_s *node) {
+RbTree *RbParent(RbTree *node) {
   return (node && node != NIL) ? node->p : NULL;
 }
-rb_tree_s *rb_left(rb_tree_s *node) {
+RbTree *RbLeft(RbTree *node) {
   return (node && node != NIL) ? node->left : NULL;
 }
-rb_tree_s *rb_right(rb_tree_s *node) {
+RbTree *RbRight(RbTree *node) {
   return (node && node != NIL) ? node->right : NULL;
 }
 
 /* Поиск */
-rb_tree_s *rb_search(rb_tree_s *node, long target, int comparator(long, long)) {
-  while (!rb_is_empty(node)) {
+RbTree *RbSearch(RbTree *node, long target, int comparator(long, long)) {
+  while (!RbIsEmpty(node)) {
     int cmp = comparator(target, node->key);
     if (cmp == 0)
       return node;
@@ -86,43 +86,43 @@ rb_tree_s *rb_search(rb_tree_s *node, long target, int comparator(long, long)) {
 }
 
 /* Минимум и максимум */
-rb_tree_s *rb_min(rb_tree_s *node) {
-  if (rb_is_empty(node))
+RbTree *RbMin(RbTree *node) {
+  if (RbIsEmpty(node))
     return NIL;
-  while (!rb_is_empty(node->left))
+  while (!RbIsEmpty(node->left))
     node = node->left;
   return node;
 }
 
-rb_tree_s *rb_max(rb_tree_s *node) {
-  if (rb_is_empty(node))
+RbTree *RbMax(RbTree *node) {
+  if (RbIsEmpty(node))
     return NIL;
-  while (!rb_is_empty(node->right))
+  while (!RbIsEmpty(node->right))
     node = node->right;
   return node;
 }
 
 /* Следующий и предыдущий */
-rb_tree_s *rb_successor(rb_tree_s *node) {
-  if (rb_is_empty(node))
+RbTree *RbSuccessor(RbTree *node) {
+  if (RbIsEmpty(node))
     return NIL;
-  if (!rb_is_empty(node->right))
-    return rb_min(node->right);
-  rb_tree_s *p = node->p;
-  while (!rb_is_empty(p) && node == p->right) {
+  if (!RbIsEmpty(node->right))
+    return RbMin(node->right);
+  RbTree *p = node->p;
+  while (!RbIsEmpty(p) && node == p->right) {
     node = p;
     p = p->p;
   }
   return p;
 }
 
-rb_tree_s *rb_predecessor(rb_tree_s *node) {
-  if (rb_is_empty(node))
+RbTree *RbPredecessor(RbTree *node) {
+  if (RbIsEmpty(node))
     return NIL;
-  if (!rb_is_empty(node->left))
-    return rb_max(node->left);
-  rb_tree_s *p = node->p;
-  while (!rb_is_empty(p) && node == p->left) {
+  if (!RbIsEmpty(node->left))
+    return RbMax(node->left);
+  RbTree *p = node->p;
+  while (!RbIsEmpty(p) && node == p->left) {
     node = p;
     p = p->p;
   }
@@ -130,13 +130,13 @@ rb_tree_s *rb_predecessor(rb_tree_s *node) {
 }
 
 /* Повороты */
-static void rb_left_rotate(rb_tree_s **root, rb_tree_s *x) {
-  rb_tree_s *y = x->right;
+static void rb_left_rotate(RbTree **root, RbTree *x) {
+  RbTree *y = x->right;
   x->right = y->left;
-  if (!rb_is_empty(y->left))
+  if (!RbIsEmpty(y->left))
     y->left->p = x;
   y->p = x->p;
-  if (rb_is_empty(x->p))
+  if (RbIsEmpty(x->p))
     *root = y;
   else if (x == x->p->left)
     x->p->left = y;
@@ -146,13 +146,13 @@ static void rb_left_rotate(rb_tree_s **root, rb_tree_s *x) {
   x->p = y;
 }
 
-static void rb_right_rotate(rb_tree_s **root, rb_tree_s *x) {
-  rb_tree_s *y = x->left;
+static void rb_right_rotate(RbTree **root, RbTree *x) {
+  RbTree *y = x->left;
   x->left = y->right;
-  if (!rb_is_empty(y->right))
+  if (!RbIsEmpty(y->right))
     y->right->p = x;
   y->p = x->p;
-  if (rb_is_empty(x->p))
+  if (RbIsEmpty(x->p))
     *root = y;
   else if (x == x->p->right)
     x->p->right = y;
@@ -163,10 +163,10 @@ static void rb_right_rotate(rb_tree_s **root, rb_tree_s *x) {
 }
 
 /* Балансировка после вставки */
-static void rb_insert_fix(rb_tree_s **root, rb_tree_s *z) {
+static void rb_insert_fix(RbTree **root, RbTree *z) {
   while (z->p->color == RED) {
     if (z->p == z->p->p->left) {
-      rb_tree_s *y = z->p->p->right;
+      RbTree *y = z->p->p->right;
       if (y->color == RED) {
         z->p->color = BLACK;
         y->color = BLACK;
@@ -182,7 +182,7 @@ static void rb_insert_fix(rb_tree_s **root, rb_tree_s *z) {
         rb_right_rotate(root, z->p->p);
       }
     } else {
-      rb_tree_s *y = z->p->p->left;
+      RbTree *y = z->p->p->left;
       if (y->color == RED) {
         z->p->color = BLACK;
         y->color = BLACK;
@@ -203,23 +203,23 @@ static void rb_insert_fix(rb_tree_s **root, rb_tree_s *z) {
 }
 
 /* Вставка */
-bool rb_insert(rb_tree_s **root, long v, int comparator(long, long)) {
+bool RbInsert(RbTree **root, long v, int comparator(long, long)) {
   if (root == NULL)
     return false;
 
   if (*root != NULL) {
-    rb_tree_s *existing = rb_search(*root, v, comparator);
-    if (!rb_is_empty(existing))
+    RbTree *existing = RbSearch(*root, v, comparator);
+    if (!RbIsEmpty(existing))
       return false;
   }
 
-  rb_tree_s *z = new_rb_node(v);
+  RbTree *z = NewRbNode(v);
   if (z == NULL)
     return false;
 
-  rb_tree_s *y = NIL;
-  rb_tree_s *x = *root;
-  while (!rb_is_empty(x)) {
+  RbTree *y = NIL;
+  RbTree *x = *root;
+  while (!RbIsEmpty(x)) {
     y = x;
     if (comparator(z->key, x->key) < 0)
       x = x->left;
@@ -227,7 +227,7 @@ bool rb_insert(rb_tree_s **root, long v, int comparator(long, long)) {
       x = x->right;
   }
   z->p = y;
-  if (rb_is_empty(y))
+  if (RbIsEmpty(y))
     *root = z;
   else if (comparator(z->key, y->key) < 0)
     y->left = z;
@@ -242,8 +242,8 @@ bool rb_insert(rb_tree_s **root, long v, int comparator(long, long)) {
 }
 
 /* Пересадка поддеревьев */
-static void rb_transplant(rb_tree_s **root, rb_tree_s *u, rb_tree_s *v) {
-  if (rb_is_empty(u->p))
+static void rb_transplant(RbTree **root, RbTree *u, RbTree *v) {
+  if (RbIsEmpty(u->p))
     *root = v;
   else if (u == u->p->left)
     u->p->left = v;
@@ -253,10 +253,10 @@ static void rb_transplant(rb_tree_s **root, rb_tree_s *u, rb_tree_s *v) {
 }
 
 /* Балансировка после удаления */
-static void rb_delete_fix(rb_tree_s **root, rb_tree_s *x) {
+static void rb_delete_fix(RbTree **root, RbTree *x) {
   while (x != *root && x->color == BLACK) {
     if (x == x->p->left) {
-      rb_tree_s *w = x->p->right;
+      RbTree *w = x->p->right;
       if (w->color == RED) {
         w->color = BLACK;
         x->p->color = RED;
@@ -280,7 +280,7 @@ static void rb_delete_fix(rb_tree_s **root, rb_tree_s *x) {
         x = *root;
       }
     } else {
-      rb_tree_s *w = x->p->left;
+      RbTree *w = x->p->left;
       if (w->color == RED) {
         w->color = BLACK;
         x->p->color = RED;
@@ -309,22 +309,22 @@ static void rb_delete_fix(rb_tree_s **root, rb_tree_s *x) {
 }
 
 /* Удаление узла */
-bool rb_delete(rb_tree_s **root, rb_tree_s *z) {
-  if (root == NULL || rb_is_empty(*root) || rb_is_empty(z))
+bool RbDelete(RbTree **root, RbTree *z) {
+  if (root == NULL || RbIsEmpty(*root) || RbIsEmpty(z))
     return false;
 
-  rb_tree_s *y = z;
-  rb_tree_s *x;
+  RbTree *y = z;
+  RbTree *x;
   int8_t y_original_color = y->color;
 
-  if (rb_is_empty(z->left)) {
+  if (RbIsEmpty(z->left)) {
     x = z->right;
     rb_transplant(root, z, z->right);
-  } else if (rb_is_empty(z->right)) {
+  } else if (RbIsEmpty(z->right)) {
     x = z->left;
     rb_transplant(root, z, z->left);
   } else {
-    y = rb_min(z->right);
+    y = RbMin(z->right);
     y_original_color = y->color;
     x = y->right;
     if (y != z->right) {
@@ -349,9 +349,9 @@ bool rb_delete(rb_tree_s **root, rb_tree_s *z) {
 }
 
 /* Итераторы */
-rb_tree_s *rb_start(rb_tree_s *root) { return rb_min(root); }
-rb_tree_s *rb_end(rb_tree_s *root) { return rb_max(root); }
-bool rb_has_next(rb_tree_s *node) { return !rb_is_empty(rb_successor(node)); }
-bool rb_has_prev(rb_tree_s *node) { return !rb_is_empty(rb_predecessor(node)); }
-rb_tree_s *rb_next(rb_tree_s *node) { return rb_successor(node); }
-rb_tree_s *rb_prev(rb_tree_s *node) { return rb_predecessor(node); }
+RbTree *RbStart(RbTree *root) { return RbMin(root); }
+RbTree *RbEnd(RbTree *root) { return RbMax(root); }
+bool RbHasNext(RbTree *node) { return !RbIsEmpty(RbSuccessor(node)); }
+bool RbHasPrev(RbTree *node) { return !RbIsEmpty(RbPredecessor(node)); }
+RbTree *RbNext(RbTree *node) { return RbSuccessor(node); }
+RbTree *RbPrev(RbTree *node) { return RbPredecessor(node); }

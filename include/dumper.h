@@ -1,6 +1,6 @@
 #pragma once
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 // typedef struct StatData StatData;
 
@@ -14,16 +14,16 @@ typedef struct StatData {
 
 typedef struct DataVector DataVector;
 
-StatData DataVectorGet(DataVector* v, size_t i);
-size_t DataVectorSize(DataVector* v);
+StatData DataVectorGet(const DataVector *v, const size_t i);
+size_t DataVectorSize(DataVector *v);
 
-int StoreDump(const char* name, const DataVector* arr);
+int StoreDump(const char *name, const DataVector *arr);
 
 DataVector *LoadDump(const char *name);
 
-DataVector* JoinDump(const DataVector* dst, const DataVector* src);
+DataVector *JoinDump(const DataVector *dst, const DataVector *src);
 
-int SortDump(DataVector *base, int (*compare)(const void*, const void*));
+int SortDump(DataVector *base, int (*compare)(const void *, const void *));
 
 DataVector *DataVectorCreate(size_t num);
 

@@ -24,15 +24,18 @@ struct DataVector {
   size_t capacity;
 };
 
-StatData DataVectorGet(DataVector *v, size_t i) { return v->data[i]; }
-size_t DataVectorSize(DataVector* v){
-	return v->size;
+StatData DataVectorGet(const DataVector *v, const size_t i) {
+  return v->data[i];
 }
+size_t DataVectorSize(DataVector *v) { return v->size; }
 
 int LongCompareOf(long v1, long v2) {
-	if(v1>v2) return 1;
-	else if(v1<v2) return -1;
-	else return 0;
+  if (v1 > v2)
+    return 1;
+  else if (v1 < v2)
+    return -1;
+  else
+    return 0;
 }
 int CostCompareOf(const void *v1, const void *v2) {
   const StatData *a = (const StatData *)v1;
@@ -147,7 +150,7 @@ DataVector *LoadDump(const char *name) {
   if (!name) {
     char msg[256];
     snprintf(msg, sizeof(msg), "%s has invalid arguments. name: %p", __func__,
-             (void*)name);
+             (void *)name);
     errno = EINVAL;
     perror(msg);
     return NULL;
@@ -199,7 +202,7 @@ DataVector *LoadDump(const char *name) {
               "fread: unexpected end of file (read %zu, expected %zu)\n",
               read_count, fileSize / sizeof(StatData));
     }
-    free(data);
+    SafeRelease(data);
     fclose(fp);
     return NULL;
   }
@@ -210,37 +213,56 @@ DataVector *LoadDump(const char *name) {
   return vector;
 }
 
-static bool CopyUnique(DataVector *dst, const DataVector *src,
-                       rb_tree_s **seen) {
+static bool CopyUnique(DataVector *dst, const DataVector *src, RbTree **seen) {
   if (!dst || !src || !seen)
     return false;
+
   for (size_t i = 0; i < src->size; i++) {
-    printf("Search in tree number %ld\n", src->data[i].id);
-		rb_tree_s* res = rb_search(*seen, src->data[i].id, LongCompareOf);
-    if (rb_is_empty(res)) {
-      printf("Num not in tree. It is ok\n");
+    RbTree *node = RbSearch(*seen, src->data[i].id, LongCompareOf);
+    if (RbIsEmpty(node)) {
+      // Новый id – добавляем копию
       StatData *copy = malloc(sizeof(StatData));
       if (!copy) {
-        perror("copy malloc isn't success");
-        rb_destroy(*seen);
+        perror("malloc copy");
+        RbDestroy(*seen);
         return false;
       }
       memcpy(copy, &(src->data[i]), sizeof(StatData));
       if (DataVectorPush(dst, copy) != 0) {
-        perror("DataVectorPush isn't success");
-        rb_destroy(*seen);
+        perror("DataVectorPush");
+        SafeRelease(copy);
+        RbDestroy(*seen);
         return false;
       }
-      printf("Value pushed to vector. Value: %ld\n",
-             dst->data[dst->size - 1].id);
-      if (!rb_insert(seen, src->data[i].id, LongCompareOf)) {
-        perror("rb_insert isn't success");
-        rb_destroy(*seen);
+      if (!RbInsert(seen, src->data[i].id, LongCompareOf)) {
+        perror("RbInsert");
+        RbDestroy(*seen);
         return false;
       }
-      printf("Inserted to the tree\n");
+    } else {
+      // id уже существует – обновляем существующий элемент в dst
+      int found_idx = -1;
+      for (size_t j = 0; j < dst->size; j++) {
+        if (dst->data[j].id == src->data[i].id) {
+          found_idx = (int)j;
+          break;
+        }
+      }
+      if (found_idx == -1) {
+        fprintf(stderr, "Internal error: id in tree but not in dst\n");
+        return false;
+      }
+      // Суммируем count и cost
+      dst->data[found_idx].count += src->data[i].count;
+      dst->data[found_idx].cost += src->data[i].cost;
+      // primary = логическое И
+      dst->data[found_idx].primary =
+          (dst->data[found_idx].primary && src->data[i].primary) ? 1 : 0;
+      // mode = максимум
+      if (src->data[i].mode > dst->data[found_idx].mode) {
+        dst->data[found_idx].mode = src->data[i].mode;
+      }
     }
-    printf("Duplicate. Skip\n");
   }
   return true;
 }
@@ -261,7 +283,7 @@ DataVector *JoinDump(const DataVector *v1, const DataVector *v2) {
     return NULL;
   }
 
-  rb_tree_s *seen = NULL;
+  RbTree *seen = NULL;
 
   if (!CopyUnique(res, v1, &seen)) {
     perror("CopyUnique with v1 failed");
@@ -269,7 +291,7 @@ DataVector *JoinDump(const DataVector *v1, const DataVector *v2) {
     return NULL;
   }
 
-  printf("tree key %ld\n", rb_key(seen));
+  printf("tree key %ld\n", RbKey(seen));
   printf("v1 id %ld\n", DataVectorGet(v1, 0).id);
   printf("res id %ld\n", DataVectorGet(res, 0).id);
 
@@ -278,7 +300,7 @@ DataVector *JoinDump(const DataVector *v1, const DataVector *v2) {
     DataVectorDestroy(res);
     return NULL;
   }
-  rb_destroy(seen);
+  RbDestroy(seen);
   return res;
 }
 

@@ -1,3 +1,7 @@
 #pragma once
 
-#define SafeRelease(p) do { free(p); (p) = NULL; } while(0)
+#define SafeRelease(p)                                                         \
+  do {                                                                         \
+    free(p);                                                                   \
+    (p) = NULL;                                                                \
+  } while (0)

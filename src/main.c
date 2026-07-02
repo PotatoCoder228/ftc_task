@@ -19,18 +19,18 @@ void printBinary(unsigned int n) {
 }
 
 void DataVectorPrint(DataVector *v) {
-    size_t size = DataVectorSize(v);
-    printf("id\tcount\tcost\t\tprimary\t\tmode\n");
-    
-    printf("--------------------------------------------------------\n");
-    
-    for (size_t i = 0; i < size%10; i++) {
-        StatData data = DataVectorGet(v, i);
-        printf("%#lx\t%d\t%+.3e\t%s\t\t", 
-               data.id, data.count, data.cost, data.primary ? "y" : "n");
-        printBinary(data.mode);
-        putchar('\n');
-    }
+  size_t size = DataVectorSize(v);
+  printf("id\tcount\tcost\t\tprimary\t\tmode\n");
+
+  printf("--------------------------------------------------------\n");
+
+  for (size_t i = 0; i < 10; i++) {
+    StatData data = DataVectorGet(v, i);
+    printf("%#lx\t%d\t%+.3e\t%s\t\t", data.id, data.count, data.cost,
+           data.primary ? "y" : "n");
+    printBinary(data.mode);
+    putchar('\n');
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -50,8 +50,15 @@ int main(int argc, char *argv[]) {
   DataVector *v1 = LoadDump(fn1);
   DataVector *v2 = LoadDump(fn2);
   DataVector *vRes = JoinDump(v1, v2);
-  SortDump(vRes, NULL);
+
+  if (SortDump(vRes, NULL) != 0) {
+    perror("Dump is not sorted!");
+    return EXIT_FAILURE;
+  }
   DataVectorPrint(vRes);
-  StoreDump(dstFn, vRes);
+  if (StoreDump(dstFn, vRes) != 0) {
+    perror("Dump is not saved!");
+    return EXIT_FAILURE;
+  }
   return 0;
 }

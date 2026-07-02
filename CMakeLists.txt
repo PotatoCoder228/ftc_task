@@ -21,7 +21,7 @@ target_compile_options(common_obj PRIVATE -Wall -Wextra -Wpedantic)
 
 add_executable(ftc_dump src/main.c $<TARGET_OBJECTS:common_obj>)
 
-add_executable(ftc_test test/main.c test/test.c $<TARGET_OBJECTS:common_obj>)
+add_executable(ftc_test test/main.c test/test.c test/test_rbtree.c $<TARGET_OBJECTS:common_obj>)
 
 target_include_directories(ftc_dump PRIVATE include)
 target_include_directories(ftc_test PRIVATE include)

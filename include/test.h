@@ -1,10 +1,12 @@
 #pragma once
 #include <assert.h>
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include <test_data.h>
+static const int ITERATIONS = 10;
 
-int runProcess(const char* cmd);
+int runProcess(const char *cmd);
 
 bool testInvalidArgsAll();
 
@@ -17,8 +19,11 @@ bool testOutputPermissionDenied();
 bool testInputPermissionDenied();
 bool testSuccess();
 
-static inline void LoadTestSet(const char *fn1, const char *fn2, StatData *arr1,
-                        StatData *arr2, size_t num1, size_t num2) {
+void printTestResult(const char *fn, bool res, double time);
+
+static inline void StoreTestSet(const char *fn1, const char *fn2,
+                                StatData *arr1, StatData *arr2, size_t num1,
+                                size_t num2) {
   if (!fn1 || !fn2 || !arr1 || !arr2) {
     return;
   }
