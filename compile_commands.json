@@ -1,1 +1,32 @@
-build/compile_commands.json
+[
+{
+  "directory": "/home/potatocoder228/FCT_task",
+  "command": "/usr/lib64/ccache/cc  -I/home/potatocoder228/FCT_task/include -std=gnu17 -Wall -Wextra -Wpedantic -o CMakeFiles/common_obj.dir/src/dumper.c.o -c /home/potatocoder228/FCT_task/src/dumper.c",
+  "file": "/home/potatocoder228/FCT_task/src/dumper.c",
+  "output": "CMakeFiles/common_obj.dir/src/dumper.c.o"
+},
+{
+  "directory": "/home/potatocoder228/FCT_task",
+  "command": "/usr/lib64/ccache/cc  -I/home/potatocoder228/FCT_task/include -std=gnu17 -Wall -Wextra -Wpedantic -o CMakeFiles/common_obj.dir/src/rbtree.c.o -c /home/potatocoder228/FCT_task/src/rbtree.c",
+  "file": "/home/potatocoder228/FCT_task/src/rbtree.c",
+  "output": "CMakeFiles/common_obj.dir/src/rbtree.c.o"
+},
+{
+  "directory": "/home/potatocoder228/FCT_task",
+  "command": "/usr/lib64/ccache/cc  -I/home/potatocoder228/FCT_task/include -std=gnu17 -o CMakeFiles/ftc_dump.dir/src/main.c.o -c /home/potatocoder228/FCT_task/src/main.c",
+  "file": "/home/potatocoder228/FCT_task/src/main.c",
+  "output": "CMakeFiles/ftc_dump.dir/src/main.c.o"
+},
+{
+  "directory": "/home/potatocoder228/FCT_task",
+  "command": "/usr/lib64/ccache/cc  -I/home/potatocoder228/FCT_task/include -std=gnu17 -o CMakeFiles/ftc_test.dir/test/main.c.o -c /home/potatocoder228/FCT_task/test/main.c",
+  "file": "/home/potatocoder228/FCT_task/test/main.c",
+  "output": "CMakeFiles/ftc_test.dir/test/main.c.o"
+},
+{
+  "directory": "/home/potatocoder228/FCT_task",
+  "command": "/usr/lib64/ccache/cc  -I/home/potatocoder228/FCT_task/include -std=gnu17 -o CMakeFiles/ftc_test.dir/test/test.c.o -c /home/potatocoder228/FCT_task/test/test.c",
+  "file": "/home/potatocoder228/FCT_task/test/test.c",
+  "output": "CMakeFiles/ftc_test.dir/test/test.c.o"
+}
+]

@@ -117,6 +117,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named common_obj
+
+# Build rule for target.
+common_obj: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 common_obj
+.PHONY : common_obj
+
+# fast build rule for target.
+common_obj/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/common_obj.dir/build.make CMakeFiles/common_obj.dir/build
+.PHONY : common_obj/fast
+
+#=============================================================================
 # Target rules for targets named ftc_dump
 
 # Build rule for target.
@@ -128,6 +141,43 @@ ftc_dump: cmake_check_build_system
 ftc_dump/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ftc_dump.dir/build.make CMakeFiles/ftc_dump.dir/build
 .PHONY : ftc_dump/fast
+
+#=============================================================================
+# Target rules for targets named ftc_test
+
+# Build rule for target.
+ftc_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ftc_test
+.PHONY : ftc_test
+
+# fast build rule for target.
+ftc_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ftc_test.dir/build.make CMakeFiles/ftc_test.dir/build
+.PHONY : ftc_test/fast
+
+src/dumper.o: src/dumper.c.o
+.PHONY : src/dumper.o
+
+# target to build an object file
+src/dumper.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/common_obj.dir/build.make CMakeFiles/common_obj.dir/src/dumper.c.o
+.PHONY : src/dumper.c.o
+
+src/dumper.i: src/dumper.c.i
+.PHONY : src/dumper.i
+
+# target to preprocess a source file
+src/dumper.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/common_obj.dir/build.make CMakeFiles/common_obj.dir/src/dumper.c.i
+.PHONY : src/dumper.c.i
+
+src/dumper.s: src/dumper.c.s
+.PHONY : src/dumper.s
+
+# target to generate assembly for a file
+src/dumper.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/common_obj.dir/build.make CMakeFiles/common_obj.dir/src/dumper.c.s
+.PHONY : src/dumper.c.s
 
 src/main.o: src/main.c.o
 .PHONY : src/main.o
@@ -153,6 +203,78 @@ src/main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ftc_dump.dir/build.make CMakeFiles/ftc_dump.dir/src/main.c.s
 .PHONY : src/main.c.s
 
+src/rbtree.o: src/rbtree.c.o
+.PHONY : src/rbtree.o
+
+# target to build an object file
+src/rbtree.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/common_obj.dir/build.make CMakeFiles/common_obj.dir/src/rbtree.c.o
+.PHONY : src/rbtree.c.o
+
+src/rbtree.i: src/rbtree.c.i
+.PHONY : src/rbtree.i
+
+# target to preprocess a source file
+src/rbtree.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/common_obj.dir/build.make CMakeFiles/common_obj.dir/src/rbtree.c.i
+.PHONY : src/rbtree.c.i
+
+src/rbtree.s: src/rbtree.c.s
+.PHONY : src/rbtree.s
+
+# target to generate assembly for a file
+src/rbtree.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/common_obj.dir/build.make CMakeFiles/common_obj.dir/src/rbtree.c.s
+.PHONY : src/rbtree.c.s
+
+test/main.o: test/main.c.o
+.PHONY : test/main.o
+
+# target to build an object file
+test/main.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ftc_test.dir/build.make CMakeFiles/ftc_test.dir/test/main.c.o
+.PHONY : test/main.c.o
+
+test/main.i: test/main.c.i
+.PHONY : test/main.i
+
+# target to preprocess a source file
+test/main.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ftc_test.dir/build.make CMakeFiles/ftc_test.dir/test/main.c.i
+.PHONY : test/main.c.i
+
+test/main.s: test/main.c.s
+.PHONY : test/main.s
+
+# target to generate assembly for a file
+test/main.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ftc_test.dir/build.make CMakeFiles/ftc_test.dir/test/main.c.s
+.PHONY : test/main.c.s
+
+test/test.o: test/test.c.o
+.PHONY : test/test.o
+
+# target to build an object file
+test/test.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ftc_test.dir/build.make CMakeFiles/ftc_test.dir/test/test.c.o
+.PHONY : test/test.c.o
+
+test/test.i: test/test.c.i
+.PHONY : test/test.i
+
+# target to preprocess a source file
+test/test.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ftc_test.dir/build.make CMakeFiles/ftc_test.dir/test/test.c.i
+.PHONY : test/test.c.i
+
+test/test.s: test/test.c.s
+.PHONY : test/test.s
+
+# target to generate assembly for a file
+test/test.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ftc_test.dir/build.make CMakeFiles/ftc_test.dir/test/test.c.s
+.PHONY : test/test.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -161,10 +283,24 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... common_obj"
 	@echo "... ftc_dump"
+	@echo "... ftc_test"
+	@echo "... src/dumper.o"
+	@echo "... src/dumper.i"
+	@echo "... src/dumper.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/rbtree.o"
+	@echo "... src/rbtree.i"
+	@echo "... src/rbtree.s"
+	@echo "... test/main.o"
+	@echo "... test/main.i"
+	@echo "... test/main.s"
+	@echo "... test/test.o"
+	@echo "... test/test.i"
+	@echo "... test/test.s"
 .PHONY : help
 
 

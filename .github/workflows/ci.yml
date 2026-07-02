@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        config: [release, debug-sanitizer, valgrind]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc clang valgrind cmake make
+
+      - name: Set compiler environment
+        run: |
+          if [ "${{ matrix.compiler }}" == "gcc" ]; then
+            echo "CC=gcc" >> $GITHUB_ENV
+            echo "CXX=g++" >> $GITHUB_ENV
+          else
+            echo "CC=clang" >> $GITHUB_ENV
+            echo "CXX=clang++" >> $GITHUB_ENV
+          fi
+
+      - name: Make build.sh executable
+        run: chmod +x build.sh
+
+      - name: Build
+        run: |
+          if [ "${{ matrix.config }}" == "release" ]; then
+            ./build.sh
+          elif [ "${{ matrix.config }}" == "valgrind" ]; then
+            ./build.sh -b Debug
+          else
+            ./build.sh -b Debug -s ON
+          fi
+
+      - name: Run tests
+        if: matrix.config == 'release' || matrix.config == 'debug-sanitizer'
+        run: ./build/ftc_test
+
+      - name: Run tests with valgrind (debug-sanitizer only)
+        if: matrix.config == 'valgrind'
+        run: valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --error-exitcode=1 ./build/ftc_test
