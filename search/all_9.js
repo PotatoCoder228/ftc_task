@@ -29,5 +29,5 @@ var searchData=
   ['rbtree_2ec_26',['rbtree.c',['../rbtree_8c.html',1,'']]],
   ['rbtree_2eh_27',['rbtree.h',['../rbtree_8h.html',1,'']]],
   ['right_28',['right',['../structRbTree.html#a5a26ff58123f2b0ff70632c39f22e659',1,'RbTree']]],
-  ['runprocess_29',['runprocess',['../test_8h.html#abf84928f1006f10befd510b5e75a1d80',1,'runProcess(const char *cmd):&#160;test.c'],['../test_8c.html#abf84928f1006f10befd510b5e75a1d80',1,'runProcess(const char *cmd):&#160;test.c']]]
+  ['runprocess_29',['runprocess',['../test_8h.html#ae60cb55598015c3663f41737280624f9',1,'RunProcess(const char *cmd):&#160;test.c'],['../test_8c.html#ae60cb55598015c3663f41737280624f9',1,'RunProcess(const char *cmd):&#160;test.c']]]
 ];
