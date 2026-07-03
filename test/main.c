@@ -1,6 +1,7 @@
 #include <test.h>
 
 #include "rbtree.h"
+#include "test_datavector.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -9,22 +10,41 @@
 #include <time.h>
 
 static bool (*dumperTests[])(void) = {
-    testInvalidArgsAll,        testInvalidArgs1, testInvalidArgs2,
-    testInputNotExists,        testOutputExists, testOutputPermissionDenied,
-    testInputPermissionDenied, testSuccess,
+    TestInvalidArgsAll,        TestInvalidArgs1, TestInvalidArgs2,
+    TestInputNotExists,        TestOutputExists, TestOutputPermissionDenied,
+    TestInputPermissionDenied, TestSuccess,
 
 };
 
 static bool (*rbtreeTests[])(void) = {
-    testCreateDestroy,  testInsertSearch,      testDelete,
-    testMinMaxSuccPred, testLargeInsertDelete, testNullHandling};
+    TestCreateDestroy,  TestInsertSearch,      TestDelete,
+    TestMinMaxSuccPred, TestLargeInsertDelete, TestNullHandling};
+
+static bool (*dataVectorTests[])(void) = {
+    TestDataVectorCreateDestroy, TestDataVectorPushPop, TestDataVectorGetSet,
+    TestDataVectorLarge, TestDataVectorNullHandling};
 
 int main() {
+  int passed = 0;
+  int all =
+      (sizeof(rbtreeTests) + sizeof(dataVectorTests) + sizeof(dumperTests)) /
+      sizeof(void *);
   for (int i = 0; i < sizeof(rbtreeTests) / sizeof(void *); i++) {
-    rbtreeTests[i]();
+    if (rbtreeTests[i]())
+      passed++;
   }
+  for (int i = 0; i < sizeof(dataVectorTests) / sizeof(void *); i++) {
+    if (dataVectorTests[i]())
+      passed++;
+  }
+
   for (int i = 0; i < sizeof(dumperTests) / sizeof(void *); i++) {
-    dumperTests[i]();
+    if (dumperTests[i]())
+      passed++;
   }
+
+  printf("Passed %d/%d tests\n", passed, all);
+  if (passed != all)
+    return EXIT_FAILURE;
   return EXIT_SUCCESS;
 }

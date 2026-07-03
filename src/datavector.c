@@ -11,22 +11,38 @@ struct DataVector {
   size_t capacity;
 };
 
-/* ---- Геттеры ---- */
-StatData DataVectorGet(const DataVector *v, size_t i) { return v->data[i]; }
+/* ===== Getters ===== */
 
-size_t DataVectorSize(const DataVector *v) { return v->size; }
-
-const StatData *DataVectorGetConstData(const DataVector *v) { return v->data; }
-
-StatData *DataVectorGetMutableData(DataVector *v) { return v->data; }
-
-void DataVectorSet(DataVector *v, size_t index, const StatData *data) {
-  if (v && index < v->size) {
-    v->data[index] = *data;
-  }
+StatData DataVectorGet(const DataVector *v, size_t i) {
+  static StatData zero = {0, 0, 0.0f, 0, 0};
+  if (!v || i >= v->size)
+    return zero;
+  return v->data[i];
 }
 
-/* ---- Управление ---- */
+size_t DataVectorSize(const DataVector *v) { return v ? v->size : 0; }
+
+const StatData *DataVectorGetConstData(const DataVector *v) {
+  if (!v)
+    return NULL;
+  return v->data;
+}
+
+StatData *DataVectorGetMutableData(DataVector *v) {
+  if (!v)
+    return NULL;
+  return v->data;
+}
+
+void DataVectorSet(DataVector *v, size_t index, const StatData *data) {
+  if (!v || !data || index >= v->size) {
+    return;
+  }
+  v->data[index] = *data;
+}
+
+/* ===== Management ===== */
+
 DataVector *DataVectorCreate(size_t num) {
   DataVector *v = malloc(sizeof(DataVector));
   if (!v)
@@ -50,8 +66,11 @@ void DataVectorDestroy(DataVector *v) {
   SafeRelease(v);
 }
 
-/* ---- Модификация ---- */
+/* ===== Modification ===== */
+
 int DataVectorPush(DataVector *v, const StatData *data) {
+  if (!v || !data)
+    return -1;
   if (v->size == v->capacity) {
     size_t new_cap = v->capacity * 2;
     StatData *new_data = realloc(v->data, new_cap * sizeof(StatData));
@@ -76,7 +95,7 @@ int DataVectorSetData(DataVector *v, StatData *data, size_t size) {
 }
 
 int DataVectorPop(DataVector *v, StatData *out) {
-  if (v->size == 0)
+  if (!v || v->size == 0)
     return -1;
   if (v->size * 2 <= v->capacity && v->capacity > DEFAULT_CAPACITY) {
     size_t new_cap = v->capacity / 2;

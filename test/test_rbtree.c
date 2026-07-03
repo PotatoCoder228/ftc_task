@@ -64,26 +64,27 @@ static size_t countNodes(RbTree *node) {
 
 /* ============ Экспортируемые тестовые функции ============ */
 
-bool testCreateDestroy(void) {
-  printf("testCreateDestroy: ");
+bool TestCreateDestroy(void) {
+  printf("TestCreateDestroy: ");
   bool res = true;
   clock_t start = clock();
 
   for (int i = 0; i < ITERATIONS; ++i) {
     RbTree *node = NewRbNode(42);
     if (node == NULL) {
-      printf("FAIL (NewRbNode вернул NULL)\n");
+      fprintf(stderr, "FAIL (NewRbNode вернул NULL)\n");
       res = false;
       goto finish;
     }
     if (RbKey(node) != 42) {
-      printf("FAIL (неверный ключ)\n");
+      fprintf(stderr, "FAIL (неверный ключ)\n");
       SafeRelease(node);
       res = false;
       goto finish;
     }
     if (RbColor(node) != BLACK) {
-      printf("FAIL (цвет нового узла не чёрный, хотя должен быть BLACK)\n");
+      fprintf(stderr,
+              "FAIL (цвет нового узла не чёрный, хотя должен быть BLACK)\n");
       SafeRelease(node);
       res = false;
       goto finish;
@@ -91,7 +92,7 @@ bool testCreateDestroy(void) {
 
     RbDestroy(node);
     if (!RbIsEmpty(NULL)) {
-      printf("FAIL (RbIsEmpty(NULL) должна вернуть true)\n");
+      fprintf(stderr, "FAIL (RbIsEmpty(NULL) должна вернуть true)\n");
       res = false;
       goto finish;
     }
@@ -100,12 +101,12 @@ bool testCreateDestroy(void) {
 finish:
   clock_t end = clock();
   double avg = ((double)(end - start)) / (CLOCKS_PER_SEC * ITERATIONS);
-  printTestResult(__func__, res, avg);
+  PrintTestResult(__func__, res, avg);
   return res;
 }
 
-bool testInsertSearch(void) {
-  printf("testInsertSearch: ");
+bool TestInsertSearch(void) {
+  printf("TestInsertSearch: ");
   bool res = true;
   clock_t start = clock();
 
@@ -116,13 +117,14 @@ bool testInsertSearch(void) {
 
     for (size_t i = 0; i < n; ++i) {
       if (!RbInsert(&root, keys[i], cmpLong)) {
-        printf("FAIL (вставка %ld не удалась)\n", keys[i]);
+        fprintf(stderr, "FAIL (вставка %ld не удалась)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (!validateRbtree(root)) {
-        printf("FAIL (нарушение свойств после вставки %ld)\n", keys[i]);
+        fprintf(stderr, "FAIL (нарушение свойств после вставки %ld)\n",
+                keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
@@ -132,14 +134,14 @@ bool testInsertSearch(void) {
     for (size_t i = 0; i < n; ++i) {
       RbTree *found = RbSearch(root, keys[i], cmpLong);
       if (RbIsEmpty(found)) {
-        printf("FAIL (ключ %ld не найден)\n", keys[i]);
+        fprintf(stderr, "FAIL (ключ %ld не найден)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (RbKey(found) != keys[i]) {
-        printf("FAIL (найденный ключ %ld не соответствует %ld)\n", RbKey(found),
-               keys[i]);
+        fprintf(stderr, "FAIL (найденный ключ %ld не соответствует %ld)\n",
+                RbKey(found), keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
@@ -148,21 +150,22 @@ bool testInsertSearch(void) {
 
     RbTree *not_found = RbSearch(root, 100, cmpLong);
     if (!RbIsEmpty(not_found)) {
-      printf("FAIL (несуществующий ключ 100 найден)\n");
+      fprintf(stderr, "FAIL (несуществующий ключ 100 найден)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
 
     if (RbInsert(&root, 5, cmpLong)) {
-      printf("FAIL (вставка дубликата 5 должна была вернуть false)\n");
+      fprintf(stderr, "FAIL (вставка дубликата 5 должна была вернуть false)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
 
     if (countNodes(root) != n) {
-      printf(
+      fprintf(
+          stderr,
           "FAIL (количество узлов не совпадает: ожидалось %zu, получено %zu)\n",
           n, countNodes(root));
       RbDestroy(root);
@@ -176,12 +179,12 @@ bool testInsertSearch(void) {
 finish:
   clock_t end = clock();
   double avg = ((double)(end - start)) / (CLOCKS_PER_SEC * ITERATIONS);
-  printTestResult(__func__, res, avg);
+  PrintTestResult(__func__, res, avg);
   return res;
 }
 
-bool testDelete(void) {
-  printf("testDelete: ");
+bool TestDelete(void) {
+  printf("TestDelete: ");
   bool res = true;
   clock_t start = clock();
 
@@ -192,7 +195,7 @@ bool testDelete(void) {
 
     for (size_t i = 0; i < n; ++i) {
       if (!RbInsert(&root, keys[i], cmpLong)) {
-        printf("FAIL (вставка %ld не удалась)\n", keys[i]);
+        fprintf(stderr, "FAIL (вставка %ld не удалась)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
@@ -200,7 +203,7 @@ bool testDelete(void) {
     }
 
     if (!validateRbtree(root)) {
-      printf("FAIL (нарушение свойств перед удалением)\n");
+      fprintf(stderr, "FAIL (нарушение свойств перед удалением)\n");
       RbDestroy(root);
       res = false;
       goto finish;
@@ -209,26 +212,27 @@ bool testDelete(void) {
     for (size_t i = 0; i < n; i += 2) {
       RbTree *node = RbSearch(root, keys[i], cmpLong);
       if (RbIsEmpty(node)) {
-        printf("FAIL (ключ %ld не найден для удаления)\n", keys[i]);
+        fprintf(stderr, "FAIL (ключ %ld не найден для удаления)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (!RbDelete(&root, node)) {
-        printf("FAIL (удаление %ld не удалось)\n", keys[i]);
+        fprintf(stderr, "FAIL (удаление %ld не удалось)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (!validateRbtree(root)) {
-        printf("FAIL (нарушение свойств после удаления %ld)\n", keys[i]);
+        fprintf(stderr, "FAIL (нарушение свойств после удаления %ld)\n",
+                keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       RbTree *found = RbSearch(root, keys[i], cmpLong);
       if (!RbIsEmpty(found)) {
-        printf("FAIL (ключ %ld найден после удаления)\n", keys[i]);
+        fprintf(stderr, "FAIL (ключ %ld найден после удаления)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
@@ -238,19 +242,20 @@ bool testDelete(void) {
     for (size_t i = 1; i < n; i += 2) {
       RbTree *node = RbSearch(root, keys[i], cmpLong);
       if (RbIsEmpty(node)) {
-        printf("FAIL (ключ %ld не найден для удаления)\n", keys[i]);
+        fprintf(stderr, "FAIL (ключ %ld не найден для удаления)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (!RbDelete(&root, node)) {
-        printf("FAIL (удаление %ld не удалось)\n", keys[i]);
+        fprintf(stderr, "FAIL (удаление %ld не удалось)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (!validateRbtree(root)) {
-        printf("FAIL (нарушение свойств после удаления %ld)\n", keys[i]);
+        fprintf(stderr, "FAIL (нарушение свойств после удаления %ld)\n",
+                keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
@@ -258,7 +263,8 @@ bool testDelete(void) {
     }
 
     if (!RbIsEmpty(root)) {
-      printf("FAIL (дерево не пустое после удаления всех элементов)\n");
+      fprintf(stderr,
+              "FAIL (дерево не пустое после удаления всех элементов)\n");
       RbDestroy(root);
       res = false;
       goto finish;
@@ -267,7 +273,8 @@ bool testDelete(void) {
     // Попытка удалить из пустого дерева
     RbTree *dummy = NewRbNode(999);
     if (RbDelete(&root, dummy)) {
-      printf("FAIL (удаление из пустого дерева должно вернуть false)\n");
+      fprintf(stderr,
+              "FAIL (удаление из пустого дерева должно вернуть false)\n");
       SafeRelease(dummy);
       RbDestroy(root);
       res = false;
@@ -276,7 +283,7 @@ bool testDelete(void) {
     SafeRelease(dummy);
 
     if (RbDelete(&root, NULL)) {
-      printf("FAIL (удаление NULL должно вернуть false)\n");
+      fprintf(stderr, "FAIL (удаление NULL должно вернуть false)\n");
       RbDestroy(root);
       res = false;
       goto finish;
@@ -288,12 +295,12 @@ bool testDelete(void) {
 finish:
   clock_t end = clock();
   double avg = ((double)(end - start)) / (CLOCKS_PER_SEC * ITERATIONS);
-  printTestResult(__func__, res, avg);
+  PrintTestResult(__func__, res, avg);
   return res;
 }
 
-bool testMinMaxSuccPred(void) {
-  printf("testMinMaxSuccPred: ");
+bool TestMinMaxSuccPred(void) {
+  printf("TestMinMaxSuccPred: ");
   bool res = true;
   clock_t start = clock();
 
@@ -304,7 +311,7 @@ bool testMinMaxSuccPred(void) {
 
     for (size_t i = 0; i < n; ++i) {
       if (!RbInsert(&root, keys[i], cmpLong)) {
-        printf("FAIL (вставка %ld не удалась)\n", keys[i]);
+        fprintf(stderr, "FAIL (вставка %ld не удалась)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
@@ -312,13 +319,13 @@ bool testMinMaxSuccPred(void) {
     }
 
     if (RbIsEmpty(RbMin(root)) || RbKey(RbMin(root)) != 1) {
-      printf("FAIL (минимальный ключ не 1)\n");
+      fprintf(stderr, "FAIL (минимальный ключ не 1)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (RbIsEmpty(RbMax(root)) || RbKey(RbMax(root)) != 7) {
-      printf("FAIL (максимальный ключ не 7)\n");
+      fprintf(stderr, "FAIL (максимальный ключ не 7)\n");
       RbDestroy(root);
       res = false;
       goto finish;
@@ -328,8 +335,9 @@ bool testMinMaxSuccPred(void) {
     RbTree *node = RbMin(root);
     for (size_t i = 0; i < n; ++i) {
       if (RbIsEmpty(node) || RbKey(node) != sorted[i]) {
-        printf("FAIL (при обходе через successor ожидался %ld, получен %ld)\n",
-               sorted[i], RbIsEmpty(node) ? -1 : RbKey(node));
+        fprintf(stderr,
+                "FAIL (при обходе через successor ожидался %ld, получен %ld)\n",
+                sorted[i], RbIsEmpty(node) ? -1 : RbKey(node));
         RbDestroy(root);
         res = false;
         goto finish;
@@ -337,7 +345,9 @@ bool testMinMaxSuccPred(void) {
       node = RbSuccessor(node);
     }
     if (!RbIsEmpty(node)) {
-      printf("FAIL (после последнего элемента successor должен быть пустым)\n");
+      fprintf(
+          stderr,
+          "FAIL (после последнего элемента successor должен быть пустым)\n");
       RbDestroy(root);
       res = false;
       goto finish;
@@ -346,7 +356,8 @@ bool testMinMaxSuccPred(void) {
     node = RbMax(root);
     for (size_t i = n; i > 0; --i) {
       if (RbIsEmpty(node) || RbKey(node) != sorted[i - 1]) {
-        printf(
+        fprintf(
+            stderr,
             "FAIL (при обходе через predecessor ожидался %ld, получен %ld)\n",
             sorted[i - 1], RbIsEmpty(node) ? -1 : RbKey(node));
         RbDestroy(root);
@@ -356,7 +367,8 @@ bool testMinMaxSuccPred(void) {
       node = RbPredecessor(node);
     }
     if (!RbIsEmpty(node)) {
-      printf("FAIL (после первого элемента predecessor должен быть пустым)\n");
+      fprintf(stderr,
+              "FAIL (после первого элемента predecessor должен быть пустым)\n");
       RbDestroy(root);
       res = false;
       goto finish;
@@ -367,8 +379,8 @@ bool testMinMaxSuccPred(void) {
       ++count;
     }
     if (count != n) {
-      printf("FAIL (RbStart/RbNext обошло %zu узлов, ожидалось %zu)\n", count,
-             n);
+      fprintf(stderr, "FAIL (RbStart/RbNext обошло %zu узлов, ожидалось %zu)\n",
+              count, n);
       RbDestroy(root);
       res = false;
       goto finish;
@@ -377,13 +389,16 @@ bool testMinMaxSuccPred(void) {
     RbTree *mid = RbSearch(root, 4, cmpLong);
     if (!RbIsEmpty(mid)) {
       if (!RbHasNext(mid)) {
-        printf("FAIL (узел 4 имеет successor, но RbHasNext вернула false)\n");
+        fprintf(stderr,
+                "FAIL (узел 4 имеет successor, но RbHasNext вернула false)\n");
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (!RbHasPrev(mid)) {
-        printf("FAIL (узел 4 имеет predecessor, но RbHasPrev вернула false)\n");
+        fprintf(
+            stderr,
+            "FAIL (узел 4 имеет predecessor, но RbHasPrev вернула false)\n");
         RbDestroy(root);
         res = false;
         goto finish;
@@ -396,12 +411,12 @@ bool testMinMaxSuccPred(void) {
 finish:
   clock_t end = clock();
   double avg = ((double)(end - start)) / (CLOCKS_PER_SEC * ITERATIONS);
-  printTestResult(__func__, res, avg);
+  PrintTestResult(__func__, res, avg);
   return res;
 }
 
-bool testLargeInsertDelete(void) {
-  printf("testLargeInsertDelete: ");
+bool TestLargeInsertDelete(void) {
+  printf("TestLargeInsertDelete: ");
   bool res = true;
   clock_t start = clock();
 
@@ -409,7 +424,7 @@ bool testLargeInsertDelete(void) {
   const size_t N = 100;
   long *keys = malloc(N * sizeof(long));
   if (!keys) {
-    printf("FAIL (не удалось выделить память)\n");
+    fprintf(stderr, "FAIL (не удалось выделить память)\n");
     return false;
   }
 
@@ -435,13 +450,14 @@ bool testLargeInsertDelete(void) {
 
     for (size_t i = 0; i < N; ++i) {
       if (!RbInsert(&root, keys[i], cmpLong)) {
-        printf("FAIL (вставка %ld не удалась)\n", keys[i]);
+        fprintf(stderr, "FAIL (вставка %ld не удалась)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (!validateRbtree(root)) {
-        printf("FAIL (нарушение свойств после вставки %ld)\n", keys[i]);
+        fprintf(stderr, "FAIL (нарушение свойств после вставки %ld)\n",
+                keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
@@ -449,7 +465,8 @@ bool testLargeInsertDelete(void) {
     }
 
     if (countNodes(root) != N) {
-      printf(
+      fprintf(
+          stderr,
           "FAIL (количество узлов не совпадает: ожидалось %zu, получено %zu)\n",
           N, countNodes(root));
       RbDestroy(root);
@@ -460,7 +477,7 @@ bool testLargeInsertDelete(void) {
     for (size_t i = 0; i < N; ++i) {
       RbTree *found = RbSearch(root, keys[i], cmpLong);
       if (RbIsEmpty(found)) {
-        printf("FAIL (ключ %ld не найден)\n", keys[i]);
+        fprintf(stderr, "FAIL (ключ %ld не найден)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
@@ -470,19 +487,20 @@ bool testLargeInsertDelete(void) {
     for (size_t i = 0; i < N; ++i) {
       RbTree *node = RbSearch(root, keys[i], cmpLong);
       if (RbIsEmpty(node)) {
-        printf("FAIL (ключ %ld не найден для удаления)\n", keys[i]);
+        fprintf(stderr, "FAIL (ключ %ld не найден для удаления)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (!RbDelete(&root, node)) {
-        printf("FAIL (удаление %ld не удалось)\n", keys[i]);
+        fprintf(stderr, "FAIL (удаление %ld не удалось)\n", keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
       }
       if (!validateRbtree(root)) {
-        printf("FAIL (нарушение свойств после удаления %ld)\n", keys[i]);
+        fprintf(stderr, "FAIL (нарушение свойств после удаления %ld)\n",
+                keys[i]);
         RbDestroy(root);
         res = false;
         goto finish;
@@ -490,7 +508,7 @@ bool testLargeInsertDelete(void) {
     }
 
     if (!RbIsEmpty(root)) {
-      printf("FAIL (дерево не пустое после удаления всех)\n");
+      fprintf(stderr, "FAIL (дерево не пустое после удаления всех)\n");
       RbDestroy(root);
       res = false;
       goto finish;
@@ -503,12 +521,12 @@ finish:
   free(keys);
   clock_t end = clock();
   double avg = ((double)(end - start)) / (CLOCKS_PER_SEC * ITERATIONS);
-  printTestResult(__func__, res, avg);
+  PrintTestResult(__func__, res, avg);
   return res;
 }
 
-bool testNullHandling(void) {
-  printf("testNullHandling: ");
+bool TestNullHandling(void) {
+  printf("TestNullHandling: ");
   bool res = true;
   clock_t start = clock();
 
@@ -516,14 +534,14 @@ bool testNullHandling(void) {
     RbTree *root = NULL;
 
     if (!RbInsert(&root, 10, cmpLong)) {
-      printf("FAIL (вставка в пустое дерево вернула false)\n");
+      fprintf(stderr, "FAIL (вставка в пустое дерево вернула false)\n");
       res = false;
       goto finish;
     }
 
     RbTree *search_res = RbSearch(NULL, 10, cmpLong);
     if (!RbIsEmpty(search_res)) {
-      printf("FAIL (RbSearch(NULL, ...) не вернула пустой узел)\n");
+      fprintf(stderr, "FAIL (RbSearch(NULL, ...) не вернула пустой узел)\n");
       RbDestroy(root);
       res = false;
       goto finish;
@@ -531,7 +549,7 @@ bool testNullHandling(void) {
 
     RbTree *dummy = NewRbNode(42);
     if (RbDelete(NULL, dummy)) {
-      printf("FAIL (RbDelete(NULL, ...) должна вернуть false)\n");
+      fprintf(stderr, "FAIL (RbDelete(NULL, ...) должна вернуть false)\n");
       SafeRelease(dummy);
       RbDestroy(root);
       res = false;
@@ -540,68 +558,68 @@ bool testNullHandling(void) {
     SafeRelease(dummy);
 
     if (RbDelete(&root, NULL)) {
-      printf("FAIL (RbDelete(..., NULL) должна вернуть false)\n");
+      fprintf(stderr, "FAIL (RbDelete(..., NULL) должна вернуть false)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
 
     if (!RbIsEmpty(RbMin(NULL))) {
-      printf("FAIL (RbMin(NULL) не вернула пустой узел)\n");
+      fprintf(stderr, "FAIL (RbMin(NULL) не вернула пустой узел)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (!RbIsEmpty(RbMax(NULL))) {
-      printf("FAIL (RbMax(NULL) не вернула пустой узел)\n");
+      fprintf(stderr, "FAIL (RbMax(NULL) не вернула пустой узел)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (!RbIsEmpty(RbSuccessor(NULL))) {
-      printf("FAIL (RbSuccessor(NULL) не вернула пустой узел)\n");
+      fprintf(stderr, "FAIL (RbSuccessor(NULL) не вернула пустой узел)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (!RbIsEmpty(RbPredecessor(NULL))) {
-      printf("FAIL (RbPredecessor(NULL) не вернула пустой узел)\n");
+      fprintf(stderr, "FAIL (RbPredecessor(NULL) не вернула пустой узел)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (!RbIsEmpty(RbStart(NULL))) {
-      printf("FAIL (RbStart(NULL) не вернула пустой узел)\n");
+      fprintf(stderr, "FAIL (RbStart(NULL) не вернула пустой узел)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (!RbIsEmpty(RbEnd(NULL))) {
-      printf("FAIL (RbEnd(NULL) не вернула пустой узел)\n");
+      fprintf(stderr, "FAIL (RbEnd(NULL) не вернула пустой узел)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (RbHasNext(NULL)) {
-      printf("FAIL (RbHasNext(NULL) вернула true)\n");
+      fprintf(stderr, "FAIL (RbHasNext(NULL) вернула true)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (RbHasPrev(NULL)) {
-      printf("FAIL (RbHasPrev(NULL) вернула true)\n");
+      fprintf(stderr, "FAIL (RbHasPrev(NULL) вернула true)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (!RbIsEmpty(RbNext(NULL))) {
-      printf("FAIL (RbNext(NULL) не вернула пустой узел)\n");
+      fprintf(stderr, "FAIL (RbNext(NULL) не вернула пустой узел)\n");
       RbDestroy(root);
       res = false;
       goto finish;
     }
     if (!RbIsEmpty(RbPrev(NULL))) {
-      printf("FAIL (RbPrev(NULL) не вернула пустой узел)\n");
+      fprintf(stderr, "FAIL (RbPrev(NULL) не вернула пустой узел)\n");
       RbDestroy(root);
       res = false;
       goto finish;
@@ -614,6 +632,6 @@ bool testNullHandling(void) {
 finish:
   clock_t end = clock();
   double avg = ((double)(end - start)) / (CLOCKS_PER_SEC * ITERATIONS);
-  printTestResult(__func__, res, avg);
+  PrintTestResult(__func__, res, avg);
   return res;
 }

@@ -60,5 +60,10 @@ int main(int argc, char *argv[]) {
     perror("Dump is not saved!");
     return EXIT_FAILURE;
   }
+
+  // Освобождаем память
+  DataVectorDestroy(v1);
+  DataVectorDestroy(v2);
+  DataVectorDestroy(vRes);
   return 0;
 }

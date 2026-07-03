@@ -92,32 +92,42 @@ int StoreDump(const char *name, const DataVector *arr) {
 DataVector *LoadDump(const char *name) {
   if (!name) {
     errno = EINVAL;
-    perror("LoadDump: invalid arguments");
+    perror(__func__);
     return NULL;
   }
 
   FILE *fp = fopen(name, "rb");
   if (!fp) {
-    perror("LoadDump: fopen");
+    perror(__func__);
+    return NULL;
+  }
+
+  DataVector *vector = DataVectorCreate(0);
+  if (!vector) {
+    perror(__func__);
+    fclose(fp);
     return NULL;
   }
 
   if (fseek(fp, 0, SEEK_END) != 0) {
-    perror("LoadDump: fseek");
+    perror(__func__);
     fclose(fp);
+    DataVectorDestroy(vector);
     return NULL;
   }
 
   long fileSize = ftell(fp);
   if (fileSize < 0) {
-    perror("LoadDump: ftell");
+    perror(__func__);
     fclose(fp);
+    DataVectorDestroy(vector);
     return NULL;
   }
   if (fileSize % sizeof(StatData) != 0) {
     errno = EBADMSG;
-    perror("LoadDump: invalid file size");
+    perror(__func__);
     fclose(fp);
+    DataVectorDestroy(vector);
     return NULL;
   }
 
@@ -125,31 +135,27 @@ DataVector *LoadDump(const char *name) {
   size_t count = fileSize / sizeof(StatData);
   StatData *data = malloc(fileSize);
   if (!data) {
-    perror("LoadDump: malloc");
+    perror(__func__);
     fclose(fp);
+    DataVectorDestroy(vector);
     return NULL;
   }
 
   size_t read_count = fread(data, sizeof(StatData), count, fp);
   if (read_count != count) {
     if (ferror(fp))
-      perror("LoadDump: fread");
+      perror("fread");
     else
-      fprintf(stderr, "LoadDump: unexpected EOF (read %zu, expected %zu)\n",
-              read_count, count);
+      fprintf(stderr, "Unexpected EOF\n");
     free(data);
     fclose(fp);
+    DataVectorDestroy(vector);
     return NULL;
   }
 
   fclose(fp);
-  DataVector *v = DataVectorCreate(0);
-  if (!v) {
-    free(data);
-    return NULL;
-  }
-  DataVectorSetData(v, data, count);
-  return v;
+  DataVectorSetData(vector, data, count);
+  return vector;
 }
 
 DataVector *JoinDump(const DataVector *v1, const DataVector *v2) {

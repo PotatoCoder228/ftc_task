@@ -1,4 +1,5 @@
 #include "statdata.h"
+#include <math.h>
 
 /* Геттеры */
 long StatDataGetId(const StatData *sd) { return sd->id; }
@@ -46,3 +47,5 @@ int StatDataCompareById(const StatData *a, const StatData *b) {
 }
 
 int LongCompare(long a, long b) { return (a > b) - (a < b); }
+
+bool StatDataCostEquals(float a, float b) { return fabsf(a - b) < 1; }

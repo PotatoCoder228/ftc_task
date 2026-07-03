@@ -22,7 +22,7 @@ static const int ITERATIONS = 10;
  *         or -1 if an error occurred (e.g., command failed, popen/pclose error,
  *         process terminated by signal).
  */
-int runProcess(const char *cmd);
+int RunProcess(const char *cmd);
 
 /**
  * @brief Prints a formatted test result with the test name, success status, and
@@ -31,7 +31,7 @@ int runProcess(const char *cmd);
  * @param res True if the test passed, false otherwise.
  * @param time Average execution time per iteration (in seconds).
  */
-void printTestResult(const char *fn, bool res, double time);
+void PrintTestResult(const char *fn, bool res, double time);
 
 /* ----- Test functions (each returns true if all iterations succeeded) ----- */
 
@@ -39,50 +39,50 @@ void printTestResult(const char *fn, bool res, double time);
  * @brief Tests invalid argument handling (no arguments).
  * @return true if the program exits with non-zero status, false otherwise.
  */
-bool testInvalidArgsAll(void);
+bool TestInvalidArgsAll(void);
 
 /**
  * @brief Tests invalid argument handling (only one argument).
  * @return true if the program exits with non-zero status, false otherwise.
  */
-bool testInvalidArgs1(void);
+bool TestInvalidArgs1(void);
 
 /**
  * @brief Tests invalid argument handling (two arguments).
  * @return true if the program exits with non-zero status, false otherwise.
  */
-bool testInvalidArgs2(void);
+bool TestInvalidArgs2(void);
 
 /**
  * @brief Tests behavior when an input file does not exist.
  * @return true if the program exits with non-zero status, false otherwise.
  */
-bool testInputNotExists(void);
+bool TestInputNotExists(void);
 
 /**
  * @brief Tests behavior when the output file already exists (should fail).
  * @return true if the program exits with non-zero status, false otherwise.
  */
-bool testOutputExists(void);
+bool TestOutputExists(void);
 
 /**
  * @brief Tests behavior when the output file has no write permission.
  * @return true if the program exits with non-zero status, false otherwise.
  */
-bool testOutputPermissionDenied(void);
+bool TestOutputPermissionDenied(void);
 
 /**
  * @brief Tests behavior when an input file has no read permission.
  * @return true if the program exits with non-zero status, false otherwise.
  */
-bool testInputPermissionDenied(void);
+bool TestInputPermissionDenied(void);
 
 /**
  * @brief Tests a successful run: merges two input dumps and verifies the
  * output.
  * @return true if the output matches the expected result, false otherwise.
  */
-bool testSuccess(void);
+bool TestSuccess(void);
 
 /**
  * @brief Prepares test input files by writing two arrays of StatData to disk.

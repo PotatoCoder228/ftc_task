@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 
 /**
@@ -133,3 +134,5 @@ int StatDataCompareById(const StatData *a, const StatData *b);
  * @return 1 if a > b, -1 if a < b, 0 if equal.
  */
 int LongCompare(long a, long b);
+
+bool StatDataCostEquals(float a, float b);
